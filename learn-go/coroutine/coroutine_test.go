@@ -192,7 +192,8 @@ func TestChannel4(t *testing.T) {
 func TestWaitGroup1(t *testing.T) {
 	/**
 	 * WaitGroup 使用起来十分简单，属于开箱即用。
-	 * 其内部的实现是计数器+信号量，程序开始时调用 Add 初始化计数，每当一个协程执行完毕时调用 Done，计数就-1，直到减为 0，
+	 * 其内部的实现是计数器+信号量，程序开始时调用 Add 初始化计数，
+	 * 每当一个协程执行完毕时调用 Done，计数就-1，直到减为 0，
 	 * 而在此期间，主协程调用 Wait 会一直阻塞直到全部计数减为 0，然后才会被唤醒
 	 */
 	var wait sync.WaitGroup
@@ -206,13 +207,52 @@ func TestWaitGroup1(t *testing.T) {
 }
 
 func TestWaitGroup2(t *testing.T) {
-
+	var mainWait sync.WaitGroup
+	var wait sync.WaitGroup
+	mainWait.Add(10)
+	fmt.Println("start")
+	for i := 0; i < 10; i++ {
+		wait.Add(1)
+		go func() {
+			fmt.Println(i)
+			wait.Done()
+			mainWait.Done()
+		}()
+		wait.Wait()
+	}
+	mainWait.Wait()
+	fmt.Println("end")
 }
 
+/*
+WaitGroup 通常适用于可动态调整协程数量的时候，例如事先知晓协程的数量，又或者在运行过程中需要动态调整。
+WaitGroup 的值不应该被复制，复制后的值也不应该继续使用，尤其是将其作为函数参数传递时，因该传递指针而不是值。
+倘若使用复制的值，计数完全无法作用到真正的 WaitGroup 上，这可能会导致主协程一直阻塞等待，程序将无法正常运行
+*/
 func TestWaitGroup3(t *testing.T) {
-
+	var mainWait sync.WaitGroup
+	mainWait.Add(1)
+	//错误提示所有的协程都已经退出，但主协程依旧在等待，这就形成了死锁，
+	//因为 hello 函数内部对一个形参 WaitGroup 调用 Done 并不会作用到原来的 mainWait 上，
+	//所以应该使用指针来进行传递。
+	hello(&mainWait)
+	mainWait.Wait()
+	fmt.Println("main执行完毕")
 }
 
-func TestWaitGroup4(t *testing.T) {
+func hello(wait *sync.WaitGroup) {
+	fmt.Println("hello")
+	wait.Done()
+}
+
+/*
+Context 译为上下文，是 Go 提供的一种并发控制的解决方案，相比于管道和 WaitGroup，它可以更好的控制子孙协程以及层级更深的协程。Context 本身是一个接口，
+只要实现了该接口都可以称之为上下文例如著名 Web 框架 Gin 中的 gin.Context。context 标准库也提供了几个实现，分别是：
+  - emptyCtx
+  - cancelCtx
+  - timerCtx
+  - valueCtx
+*/
+func TestContext(t *testing.T) {
 
 }
