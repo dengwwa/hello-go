@@ -1,11 +1,10 @@
 package main
 
 import (
-	"context"
+	"errors"
+	"fmt"
 	"github.com/getsentry/sentry-go"
 	"log"
-	"log/slog"
-	"time"
 )
 
 // https://developer.aliyun.com/article/951536
@@ -25,15 +24,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("sentry.Init: %s", err)
 	}
-	// 在程序终止之前刷新缓冲事件。
-	// 将超时设置为程序能够等待的最大持续时间。
-	defer sentry.Flush(2 * time.Second)
+	sentry.CaptureException(errors.New("erro -test"))
+	sentry.CaptureMessage("Hello, sentry!")
 
-	slog.Info("hello, info slog")
-	slog.Error("hello, error slog")
+	//sentry.Flush(5 * time.Second)
 
-	logger := sentry.NewLogger(context.Background())
-	logger.Info().WithCtx(context.Background()).Emit("hello, info logger")
-	logger.Error().WithCtx(context.Background()).Emit("hello, error logger")
-	//sentry.CaptureMessage("Hello, sentry!")
+	hello1()
+}
+
+func hello1() {
+	defer hello2()
+	fmt.Println("hello1 world")
+	hello3()
+}
+
+func hello2() {
+	fmt.Println("hello2 world")
+}
+
+func hello3() {
+	fmt.Println("hello3 world")
 }
