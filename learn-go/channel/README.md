@@ -190,8 +190,8 @@ Channel closed, loop exited.
 `select` 语句会一直等待，直到某个 channel 有数据可读或者可写。
 `select` 的常见用途：
 
-* 非阻塞的通信： 使用 default 分支。
-* 超时控制： 结合 time.After Channel。
+* **非阻塞的通信**： 使用 default 分支。
+* **超时控制**： 结合 time.After Channel。
 
 ```go
 select {
