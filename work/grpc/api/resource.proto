@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = ".;resource";
+
+package resource;
+
+// compile command : protoc  --go_out=. --go-grpc_out=. resource.proto
+service Resource {
+  rpc Apply(ApplyRequest) returns (google.protobuf.Empty);
+}
+
+message ApplyRequest {
+  uint64 appId = 1;
+}
